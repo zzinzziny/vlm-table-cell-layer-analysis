@@ -1,0 +1,12 @@
+# Environment of the original runs (Python 3.10): Qwen, Ministral, LLaVA runs and all scoring.
+torch==2.11.0          # CUDA 13.0 build
+transformers==5.7.0
+numpy==1.26.4
+scipy==1.15.3
+scikit-learn==1.7.2
+matplotlib==3.10.9
+pillow==12.1.1
+
+# Gemma-4 (12B, 31B) needs transformers 5.17.0; it was run in a separate environment:
+#   python -m venv gemma-env --system-site-packages && gemma-env/bin/pip install transformers==5.17.0
+#   export PY_GEMMA=gemma-env/bin/python

@@ -1,0 +1,7 @@
+__pycache__/
+# run outputs are written next to the scripts; only the .py files under code/ are tracked
+/code/**
+!/code/**/
+!/code/**/*.py
+# large inputs downloaded separately
+/data/cf2_images/
