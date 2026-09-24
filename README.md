@@ -1,6 +1,6 @@
 # Layer-by-layer use of table-cell representations in VLMs
 
-Code and question items for a causal, layer-by-layer analysis of how vision-language models use the visual tokens of a single table cell when answering questions about document-page images.
+Layer-by-layer analysis of how vision-language models use the visual tokens of a single table cell when answering questions about document-page images.
 
 ## Research summary
 
