@@ -11,18 +11,9 @@ For one and the same cell value we separate three properties:
 2. **Causal influence**: whether editing that site changes the prediction.
 3. **Operand reuse**: whether the value is picked up again as an operand by a different task.
 
-The four experiments are:
-
-| # | Question | Method |
-|---|---|---|
-| 1 | Is the cell's token site the right place to intervene? | Mean-ablate the answer cell against a matched control cell (necessity). Rank every cell of the page by ablation effect (site specificity). Swap in a counterfactual value at layer 0 (value specificity). |
-| 2 | Does the same cell stay causally relevant to the same depth when it is looked up and when it is used in arithmetic? | Paired `Lookup(B)` / `Compute(A,B)` questions on the same table cell. Patch the donor (B→B′) cell state into the base run one layer at a time and find the last layer that still flips the answer. |
-| 3 | Does the causal-use window depend on the question type or the page structure? | Layer necessity D(l) of the evidence cells over 918 questions, grouped by operation (Select / Join / Compute / Aggregate / Compare) × single-/multi-page evidence. |
-| 4 | Once direct influence ends, is the value still there, and is it reused? | Linear probes on cell and text positions. Recomputation control: inject the B→B′ activation difference at the cell or at text positions and check whether the answer becomes f(A, B′). |
-
 ### Models
 
-| tag | Hugging Face model | token geometry | backend |
+| tag | model | token geometry | backend |
 |---|---|---|---|
 | `qwen35_9b` | Qwen/Qwen3.5-9B | `qwen35` (32 px) | `qwen` |
 | `qwen3vl_8b` | Qwen/Qwen3-VL-8B-Instruct | `qwen35` (32 px) | `qwen` |
@@ -72,8 +63,6 @@ bash link_data.sh                               # bash link_data.sh --clean remo
 ```
 
 ## Running the experiments
-
-Each script takes one model tag and runs every step for that model. Pick the GPU with `CUDA_VISIBLE_DEVICES`. `LIMIT=1` runs one item per step as a smoke test, and `DRY_RUN=1` only prints the commands.
 
 ```bash
 export CUDA_VISIBLE_DEVICES=0
@@ -148,21 +137,3 @@ Every file in `data/` is a question item or an image that an item points to. An 
 | `handoff2/recompute_items.jsonl` | reference A2 choices for the recomputation control |
 | `external/pubtables-v2/Full Documents/test/images/` | the PubTables-v2 test page images the items use (980 pages) |
 | `cf2_images/` (separate download, see Setup) | donor and base renders: the B cell redrawn with its leading digit changed |
-
-## Rebuilding the item pools (optional)
-
-The pools are provided ready to use. To rebuild them from scratch:
-
-1. Build the cell → visual-token labels with `code/external/qa_enrichment/enrich_annotations.py` and `build_patch_cell_labels.py`. These need the full PubTables-v2 release. Write the output (`--out-dir`) to `data/external/qa_enrichment/patch_cell_labels/`, where the builders expect `patch_cell_labels_test*.jsonl`.
-2. Build the paired pools:
-   - single-page: `build_cf_candidates.py` (cf2, cf3), `build_cf_candidates_remap.py` (cf4), and `build_cf_candidates_relaxed.py` (cf5)
-   - multi-page: `build_cf_mp_candidates.py` (cfmp) and `build_cf_mp_candidates2.py` (cfmp2)
-   - convert them to the other model geometries with `remap_pool_geometry.py`
-3. Build the shared registry and runner inputs with `common/build_registry.py` and `common/registry_to_items.py`, which uses `handoff2/build_recompute_items.py` for A2. Convert the Experiment 3 items with `mpreq/remap_items_geometry.py`.
-
-Donor digits are drawn with DejaVu Serif (`/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf`). The source questions of the Experiment 3 sets are not included; those sets are provided only as finished item files.
-
-## Notes
-
-- Qwen3.5-9B is the only thinking model; its chat template is called with `enable_thinking=False`. All other runs pass `--no-thinking-flag`, which does not change their prompts.
-- `optype/label_gpt5.py` and `label_c0_gpt5.py` call GPT-5 through OpenRouter and read the API key from `OPENROUTER_API_KEY`. Their outputs are already in `data/optype/`.
